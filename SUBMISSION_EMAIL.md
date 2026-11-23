@@ -13,7 +13,7 @@ Hi Mohsen,
 
 Applying for the Software Engineering Intern role. For the project I built a benchmark that runs several AI PR reviewers over the eight review cases and scores each finding against a key I froze before any run. The emphasis is a fair, reproducible experiment: ground truth committed up front, blind grading with the provider hidden, isolated run repos per reviewer, honest coverage denominators, and a one-commit trace through CI to a deployed, verified invocation (I used Cloud Run since I had GCP credits; the AWS path ships unchanged).
 
-PR (code, rerun steps, coverage table, report): <PR_LINK>
+PR (code, rerun steps, coverage table, report): https://github.com/Jitendarmahara/ai-review-bench/pull/1
 2-min walkthrough: <VIDEO_LINK>
 
 I'm a backend + AI engineer with ~2.5 years shipping production services (Node/TypeScript at Citi via LTIMindtree) and independent projects in AI agents and real-time systems — more at jitendar.xyz.
@@ -33,5 +33,5 @@ Notes:
 - Open the PR in your own `ai-review-bench` repo (branch off, PR into main) so the
   reviewers/report are reviewable. Grant the hiring team read access if the repo
   stays private.
-- Replace `<PR_LINK>` and `<VIDEO_LINK>` before sending. Do not send until the
+- Replace `https://github.com/Jitendarmahara/ai-review-bench/pull/1` and `<VIDEO_LINK>` before sending. Do not send until the
   video is recorded and the PR is open with real run data.
