@@ -7,7 +7,6 @@ __pycache__/
 # benchmark runtime artifacts
 bench.db
 *.db
-frozen_key.sql
 to_grade*.json
 __pycache__/
 *.pyc
