@@ -6,7 +6,7 @@
 
 - Distinct reviewers: 2
 - Distinct cases touched: 8
-- Completed provider-case pairs (non-retry): 16
+- Completed provider-case pairs (non-retry): 22
 - Repeats (variability runs): 0
 
 
@@ -21,8 +21,8 @@
 
 | Provider | 04 | 05 | 06 | completed |
 |---|---|---|---|---|
-| coderabbit | - | - | - | 0/3 |
-| proofline | - | - | - | 0/3 |
+| coderabbit | OK | OK | OK | 3/3 |
+| proofline | OK | OK | OK | 3/3 |
 
 Legend: OK completed · Q quota_stop · E error · - unattempted · . pending
 
@@ -30,20 +30,23 @@ Legend: OK completed · Q quota_stop · E error · - unattempted · . pending
 
 | Provider | correct_bug | false_warning | needs_deploy_info | valid_unanticipated | noise | missed |
 |---|---|---|---|---|---|---|
-| coderabbit | 3 | 0 | 0 | 1 | 0 | 0 |
-| proofline | 3 | 1 | 0 | 2 | 0 | 0 |
+| coderabbit | 6 | 0 | 0 | 1 | 0 | 0 |
+| proofline | 4 | 1 | 0 | 3 | 0 | 2 |
 
 _Columns are rubric buckets; see EXPERIMENT_PROTOCOL.md. `missed` = cases with a known defect where the reviewer produced no correct_bug finding._
 
 
 ## Missed defects (detail)
 
+- proofline: 04/with_snapshot, 05/with_snapshot
 
-## Spotlight result (draft — verify/edit for the video)
+## Spotlight result
 
-Case 03 (batch queued deliveries), code_only. Base `pilot/base` -> head `pilot/03`.
-Both reviewers flagged it. Proofline: "Worker leaves the last partial batch undelivered." CodeRabbit: "If the queue has 1-19 due jobs, this loop executes zero times." I verified by reading the change: `range(0, len(jobs) - 20 + 1, 20)` skips the remainder and, under 20 jobs, never runs; `deliver_due` then writes no receipts and returns a lower count. Both earned `correct_bug` against the frozen defect.
-Limitation: I graded from the diff, not from a deployed run; a live load test with a non-multiple-of-20 queue would make the dropped-delivery count concrete.
+Case 05 (increase export batch size 25 -> 50), with_snapshot. Base `pilot/base` -> head `pilot/05-snap` (adds DEPLOYMENT_SNAPSHOT.md).
+The snapshot records per-site receiver limits: Elm accepts 100 rows/request, Cedar only 40, each with 70 ready rows, and "an oversized request is rejected in full."
+CodeRabbit's finding: "Raising the export batch size to 50 makes the first request to the cedar site exceed its 40-row receiver limit. The receiver rejects that request in full, so the cutover export to cedar is likely to fail." I verified against the snapshot: 70 ready rows at batch 50 sends a first request of 50 rows; 50 > 40, so Cedar rejects it. The old value 25 fit under 40. Graded correct_bug.
+Proofline returned no findings on the same PR, so it missed this defect. That is the clearest difference in the run: with deployment context supplied, CodeRabbit resolved all three deploy-dependent cases (04, 05, 06); Proofline resolved one (06) and missed two.
+Limitation: I did not stand up the Cedar receiver to observe the rejection; the conclusion rests on the snapshot's stated 40-row limit and reject-in-full rule.
 
 
 ## Caveat
