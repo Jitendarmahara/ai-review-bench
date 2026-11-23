@@ -1,0 +1,13 @@
+# Cloud Build config so the image builds from gcp/Dockerfile with the repo root
+# as context (reports.py + migrations/ must be in the image).
+#   gcloud builds submit --config gcp/cloudbuild.yaml --substitutions=_IMAGE=...,_COMMIT=... .
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "gcp/Dockerfile", "-t", "${_IMAGE}", "."]
+images:
+  - "${_IMAGE}"
+options:
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _IMAGE: ""
+  _COMMIT: ""

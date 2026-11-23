@@ -1,0 +1,2 @@
+# No third-party dependencies. Standard library only (sqlite3, argparse, urllib, json).
+# Requirements: Python 3.10+ and the GitHub CLI (`gh`), authenticated.

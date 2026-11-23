@@ -1,0 +1,75 @@
+# Copy to .github/workflows/gcp.yml in your repo. GCP equivalent of aws.yml.
+# Keyless auth via Workload Identity Federation (no long-lived service-account key).
+#
+# Repo Variables (Settings -> Secrets and variables -> Actions -> Variables):
+#   GCP_PROJECT            your project id
+#   GCP_REGION             e.g. us-central1
+#   GCP_WIF_PROVIDER       projects/NNN/locations/global/workloadIdentityPools/POOL/providers/PROVIDER
+#   GCP_SERVICE_ACCOUNT    deployer@PROJECT.iam.gserviceaccount.com
+#   AR_REPO                Artifact Registry repo name (e.g. bench)
+name: GCP sample deployment
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Deploy and verify the checked-out commit, or delete the service
+        type: choice
+        required: true
+        options: [deploy, verify, delete]
+
+permissions: {}
+
+concurrency:
+  group: gcp-sample-deployment
+  cancel-in-progress: false
+
+jobs:
+  sample:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write   # required for Workload Identity Federation
+    env:
+      SERVICE: ai-review-bench
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check the artifact before deploying
+        run: |
+          python3 gcp/deploy.py package
+          python3 gcp/deploy.py smoke
+
+      - id: auth
+        name: Authenticate to Google Cloud (keyless)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy and verify one report
+        if: inputs.operation == 'deploy'
+        run: |
+          python3 gcp/deploy.py deploy \
+            --project "${{ vars.GCP_PROJECT }}" --region "${{ vars.GCP_REGION }}" \
+            --repo "${{ vars.AR_REPO }}" --service "$SERVICE" --commit "${{ github.sha }}"
+          python3 gcp/deploy.py verify \
+            --project "${{ vars.GCP_PROJECT }}" --region "${{ vars.GCP_REGION }}" --service "$SERVICE"
+
+      - name: Verify only
+        if: inputs.operation == 'verify'
+        run: |
+          python3 gcp/deploy.py verify \
+            --project "${{ vars.GCP_PROJECT }}" --region "${{ vars.GCP_REGION }}" --service "$SERVICE"
+
+      - name: Delete the sample deployment
+        if: inputs.operation == 'delete'
+        run: |
+          python3 gcp/deploy.py delete \
+            --project "${{ vars.GCP_PROJECT }}" --region "${{ vars.GCP_REGION }}" --service "$SERVICE"

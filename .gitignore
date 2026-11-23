@@ -3,3 +3,10 @@ __pycache__/
 /reports.sqlite
 /reports.sqlite-*
 .DS_Store
+
+# benchmark runtime artifacts
+bench.db
+*.db
+to_grade*.json
+__pycache__/
+*.pyc
