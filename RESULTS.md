@@ -52,3 +52,9 @@ Limitation: I did not stand up the Cedar receiver to observe the rejection; the 
 ## Caveat
 
 Eight related changes in one application give limited evidence about performance elsewhere, even across many providers.
+
+## Evidence trace (status)
+
+The Cloud Run deploy path (`gcp/`) is built and **verified locally**: `python3 gcp/deploy.py smoke --docker` builds the image, runs the container, and asserts the returned evidence (commit, request_id, report, receipt). The hosted deploy -> verify -> receipt run is pending GCP account verification (India tax/KYC) on the billing account, so it was not run against the cloud. It is a single command once billing is active:
+`python3 gcp/deploy.py deploy --project <PROJ> --repo bench --service ai-review-bench && python3 gcp/deploy.py verify --project <PROJ> --service ai-review-bench`
+The starter's AWS path (`aws/`) is unchanged and runs the same trace for anyone with an AWS account.
